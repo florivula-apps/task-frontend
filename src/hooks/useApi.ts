@@ -1,26 +1,38 @@
-import { useQuery, useMutation, useQueryClient } from '@tantml:react-query';
-import { authApi } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { request } from '@/lib/api';
 
-// Example hook - customize for your app
-export function useExample() {
+export function useTasks(filters?: { status?: string; priority?: string }) {
   return useQuery({
-    queryKey: ['example'],
-    queryFn: async () => {
-      // Replace with your API call
-      return { message: 'Hello from API' };
+    queryKey: ['tasks', filters],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (filters?.status) params.set('status', filters.status);
+      if (filters?.priority) params.set('priority', filters.priority);
+      return request(`/tasks?${params}`);
     },
   });
 }
 
-export function useExampleMutation() {
+export function useCreateTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: any) => {
-      // Replace with your API call
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['example'] });
-    },
+    mutationFn: (data: any) => request('/tasks', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+  });
+}
+
+export function useUpdateTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: any) => request(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+  });
+}
+
+export function useDeleteTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => request(`/tasks/${id}`, { method: 'DELETE' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
   });
 }

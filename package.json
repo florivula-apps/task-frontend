@@ -1,8 +1,8 @@
 {
-  "name": "app-frontend",
+  "name": "task-frontend",
   "private": true,
   "version": "1.0.0",
-  "description": "React + TypeScript + Vite + Tailwind frontend template",
+  "description": "Task management app - frontend",
   "type": "module",
   "scripts": {
     "dev": "vite",

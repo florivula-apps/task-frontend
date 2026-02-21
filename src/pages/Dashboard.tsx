@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,10 +20,13 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle>Welcome!</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <p className="text-muted-foreground">
               This is a template dashboard. Start building your app here!
             </p>
+            <Link to="/tasks">
+              <Button>Go to Tasks</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
