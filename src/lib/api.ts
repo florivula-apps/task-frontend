@@ -1,37 +1,14 @@
-import type {
-  WeightEntry,
-  FoodEntry,
-  SavedFood,
-  GymSession,
-  Exercise,
-  DashboardKPI,
-  PaginatedSessions,
-  CalendarData,
-} from '@/types/gym';
-
 const BASE = '/api';
-
-export const TOKEN_KEY = 'gym-token';
+export const TOKEN_KEY = 'task-token';
 
 export interface AuthResponse {
   token: string;
+  user: { id: number; username: string; email: string; role: string };
 }
 
 export interface LoginPayload {
   username: string;
   password: string;
-}
-
-export interface UserProfile {
-  id: number;
-  username: string;
-  dailyCalorieGoal: number | null;
-  dailyProteinGoal: number | null;
-}
-
-export interface UpdateProfilePayload {
-  dailyCalorieGoal?: number;
-  dailyProteinGoal?: number;
 }
 
 export async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -63,87 +40,8 @@ export class ApiError extends Error {
   }
 }
 
-// Weight
-export const weightApi = {
-  getAll: () => request<WeightEntry[]>('/weight'),
-  create: (data: { weight: number; date: string }) =>
-    request<WeightEntry>('/weight', { method: 'POST', body: JSON.stringify(data) }),
-  delete: (id: number) =>
-    request<void>(`/weight/${id}`, { method: 'DELETE' }),
-};
-
-// Food
-export const foodApi = {
-  getByDate: (date: string) => request<FoodEntry[]>(`/food?date=${date}`),
-  create: (data: { name: string; calories: number; protein: number; date: string; time: string }) =>
-    request<FoodEntry>('/food', { method: 'POST', body: JSON.stringify(data) }),
-  delete: (id: number) =>
-    request<void>(`/food/${id}`, { method: 'DELETE' }),
-};
-
-// Sessions
-export const sessionsApi = {
-  list: (page = 1, limit = 10) =>
-    request<PaginatedSessions>(`/sessions?page=${page}&limit=${limit}`),
-  getActive: async (): Promise<GymSession | null> => {
-    try {
-      return await request<GymSession>('/sessions/active');
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 404) return null;
-      throw e;
-    }
-  },
-  getLatest: async (): Promise<GymSession | null> => {
-    try {
-      return await request<GymSession>('/sessions/latest');
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 404) return null;
-      throw e;
-    }
-  },
-  start: (data: { plan: string; dayType: string }) =>
-    request<GymSession>('/sessions/start', { method: 'POST', body: JSON.stringify(data) }),
-  addExercise: (sessionId: number, data: { name: string; sets: { weight: number; reps: number; setNumber: number }[] }) =>
-    request<Exercise>(`/sessions/${sessionId}/exercise`, { method: 'POST', body: JSON.stringify(data) }),
-  complete: (sessionId: number) =>
-    request<GymSession>(`/sessions/${sessionId}/complete`, { method: 'POST' }),
-  delete: (sessionId: number) =>
-    request<void>(`/sessions/${sessionId}`, { method: 'DELETE' }),
-};
-
-// Dashboard
-export const dashboardApi = {
-  getKPI: () => request<DashboardKPI>('/dashboard/kpi'),
-  getCalendar: (year: number, month: number) =>
-    request<CalendarData>(`/dashboard/calendar/${year}/${month}`),
-};
-
-// Public (no auth)
-export const publicApi = {
-  getKpi: () => request<DashboardKPI>('/public/kpi'),
-  getWeight: () => request<WeightEntry[]>('/public/weight'),
-  getSessions: (page = 1, limit = 10) =>
-    request<PaginatedSessions>(`/public/sessions?page=${page}&limit=${limit}`),
-  getCalendar: (year: number, month: number) =>
-    request<CalendarData>(`/public/calendar/${year}/${month}`),
-};
-
-// Saved Foods
-export const savedFoodsApi = {
-  getAll: () => request<SavedFood[]>('/saved-foods'),
-  create: (data: { name: string; calories: number; protein: number }) =>
-    request<SavedFood>('/saved-foods', { method: 'POST', body: JSON.stringify(data) }),
-  delete: (id: number) =>
-    request<void>(`/saved-foods/${id}`, { method: 'DELETE' }),
-  addToToday: (id: number, time?: string) =>
-    request<FoodEntry>(`/saved-foods/${id}/add-to-today`, { method: 'POST', body: JSON.stringify({ time }) }),
-};
-
 // Auth
 export const authApi = {
   login: (data: LoginPayload) =>
     request<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
-  getProfile: () => request<UserProfile>('/auth/me'),
-  updateProfile: (data: UpdateProfilePayload) =>
-    request<UserProfile>('/auth/profile', { method: 'PUT', body: JSON.stringify(data) }),
 };
